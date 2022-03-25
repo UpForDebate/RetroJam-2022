@@ -120,7 +120,6 @@ namespace StarterAssets
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
-			Spell();
 		}
 
 		private void LateUpdate()
@@ -170,7 +169,7 @@ namespace StarterAssets
 		private void Move()
 		{
 			// set target speed based on move speed, sprint speed and if sprint is pressed
-			float targetSpeed = !_input.sprint ? SprintSpeed : MoveSpeed;
+			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
 			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -209,6 +208,9 @@ namespace StarterAssets
 			{
 				_targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
 				float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
+
+				// rotate to face input direction relative to camera position
+				transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
 			}
 
 
@@ -223,12 +225,6 @@ namespace StarterAssets
 				_animator.SetFloat(_animIDSpeed, _animationBlend);
 				_animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
 			}
-
-
-			Vector3 worldAimTarget = Camera.main.transform.position + Camera.main.transform.forward * 20;
-			worldAimTarget.y = transform.position.y;
-			Vector3 aimDirection = (worldAimTarget - transform.position).normalized;
-			transform.forward = Vector3.Lerp(transform.forward, aimDirection, Time.deltaTime * 20f);
 		}
 
 		private void JumpAndGravity()
@@ -298,11 +294,6 @@ namespace StarterAssets
 			{
 				_verticalVelocity += Gravity * Time.deltaTime;
 			}
-		}
-
-		private void Spell() 
-		{
-
 		}
 
 		private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
