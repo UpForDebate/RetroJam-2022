@@ -9,7 +9,17 @@ public class SwitchCharacter : MonoBehaviour
     GameObject whiteDude, blackDude;
     void OnDeath()
     {
-        whiteDude.SetActive(!whiteDude.activeSelf);
-        blackDude.SetActive(!blackDude.activeSelf);
+        if (whiteDude.activeSelf)
+        {
+            whiteDude.SetActive(false);
+            blackDude.SetActive(true);
+        }
+        else
+        {
+            
+            blackDude.SetActive(false);
+            whiteDude.SetActive(true);
+        }
+        
     }
 }
