@@ -18,9 +18,4 @@ public class Orb : MonoBehaviour
             Mathf.Lerp(transform.position.z, Character.transform.position.z, Time.deltaTime * speed)
             );
     }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        
-    }
 }
