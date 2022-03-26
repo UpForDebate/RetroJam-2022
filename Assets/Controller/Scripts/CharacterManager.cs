@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class CharacterManager : MonoBehaviour
 {
@@ -19,14 +20,27 @@ public class CharacterManager : MonoBehaviour
         }
     }
     #endregion
-
+    [SerializeField]
+    private CinemachineVirtualCamera vCam;
     [SerializeField]
     private GameObject LightCharacter;
     [SerializeField]
     private GameObject ShadowCharacter;
 
-    public void SwitchCharacter() 
+ 
+    public void OnDeath() 
     {
-
+        if (LightCharacter.activeSelf)
+        {
+            LightCharacter.SetActive(false);
+            ShadowCharacter.SetActive(true);
+            vCam.Follow = ShadowCharacter.transform.Find("PlayerCameraRoot").transform;
+        }
+        else 
+        {
+            ShadowCharacter.SetActive(false);
+            LightCharacter.SetActive(true);
+            vCam.Follow = LightCharacter.transform.Find("PlayerCameraRoot").transform;
+        }
     }
 }

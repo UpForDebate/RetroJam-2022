@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
 #endif
@@ -24,6 +25,10 @@ namespace StarterAssets
 		public float RotationSmoothTime = 0.12f;
 		[Tooltip("Acceleration and deceleration")]
 		public float SpeedChangeRate = 10.0f;
+		[Tooltip("Disable Controller")]
+		public bool sleep = false;
+		[Tooltip("Return to this when dead")]
+		public Vector3 spawnPoint;
 
 		[Space(10)]
 		[Tooltip("The height the player can jump")]
@@ -92,6 +97,7 @@ namespace StarterAssets
 		private int _animIDFreeFall;
 		private int _animIDMotionSpeed;
 		private int _animIDCasting;
+		private int _animIDSuicide;
 
 		private Animator _animator;
 		private CharacterController _controller;
@@ -124,17 +130,22 @@ namespace StarterAssets
 			_fallTimeoutDelta = FallTimeout;
 
 			_aiming = false;
+
+			spawnPoint = transform.position;
 		}
 
 		private void Update()
 		{
 			_hasAnimator = TryGetComponent(out _animator);
-			
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
-			Spell();
-			Switch();
+
+            if (!sleep)
+            {
+				JumpAndGravity();
+				GroundedCheck();
+				Move();
+				Spell();
+			}
+
 		}
 
 		private void LateUpdate()
@@ -150,6 +161,7 @@ namespace StarterAssets
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 			_animIDCasting = Animator.StringToHash("Cast");
+			_animIDSuicide = Animator.StringToHash("Suicide");
 		}
 
 		private void GroundedCheck()
@@ -315,23 +327,29 @@ namespace StarterAssets
 			}
 		}
 
-		private void Switch() 
+		public void Die(bool returnToSpawnPoint = true) 
 		{
+			sleep = true;
+			_input.move = Vector2.zero;
+			_input.look = Vector2.zero;
 
+			_animator.SetLayerWeight(1, 0);
+			_animator.SetTrigger(_animIDSuicide);
+
+			if (returnToSpawnPoint)
+				StartCoroutine(WaitForDeath(Vector3.zero));
+			else
+				StartCoroutine(WaitForDeath(transform.position));
+			
+			
 		}
 
-		private void Special() 
+		IEnumerator WaitForDeath(Vector3 respawnPoint) 
 		{
-            if (_input.special && isShadow)
-            {
-				//ShadowMode
-            }
-            else if (_input.special)
-            {
-				//GrapplingHook
-            }
+			yield return new WaitForSeconds(2f);
+			transform.position = respawnPoint;
+			CharacterManager.Instance.OnDeath();
 		}
-
 
 		Interactable target;
 		private void Spell() 
@@ -353,9 +371,10 @@ namespace StarterAssets
                     if (raycastHit.transform.TryGetComponent<Interactable>(out target))
                     {
 						aimParticles.transform.position = target.particleLocation.position;
-                    }
-
-					aimParticles.GetComponentInChildren<ParticleSystem>().startColor = isShadow? Color.white : Color.black;
+						aimParticles.GetComponentInChildren<ParticleSystem>().startColor = Color.red;
+					}
+					else
+						aimParticles.GetComponentInChildren<ParticleSystem>().startColor = isShadow? Color.white : Color.black;
 				}
                 else
                 {
@@ -388,7 +407,12 @@ namespace StarterAssets
 			return Mathf.Clamp(lfAngle, lfMin, lfMax);
 		}
 
-		private void OnDrawGizmosSelected()
+        private void OnEnable()
+        {
+			sleep = false;
+        }
+
+        private void OnDrawGizmosSelected()
 		{
 			Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
 			Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
