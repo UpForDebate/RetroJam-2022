@@ -37,6 +37,9 @@ namespace StarterAssets
 		[Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
 		public float FallTimeout = 0.15f;
 
+		[Space(10)]
+		[SerializeField] private bool isShadow = false;
+
 		[Header("Player Grounded")]
 		[Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
 		public bool Grounded = true;
@@ -46,6 +49,12 @@ namespace StarterAssets
 		public float GroundedRadius = 0.28f;
 		[Tooltip("What layers the character uses as ground")]
 		public LayerMask GroundLayers;
+
+		[Header("Player Aim")]
+		[SerializeField] private float raycastRange = 20f;
+		[SerializeField] private LayerMask aimLayerMask = new LayerMask();
+		[SerializeField] private GameObject aimParticles;
+		public bool isLocked = false;
 
 		[Header("Cinemachine")]
 		[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
@@ -70,6 +79,7 @@ namespace StarterAssets
 		private float _rotationVelocity;
 		private float _verticalVelocity;
 		private float _terminalVelocity = 53.0f;
+		private bool _aiming;
 
 		// timeout deltatime
 		private float _jumpTimeoutDelta;
@@ -81,6 +91,7 @@ namespace StarterAssets
 		private int _animIDJump;
 		private int _animIDFreeFall;
 		private int _animIDMotionSpeed;
+		private int _animIDCasting;
 
 		private Animator _animator;
 		private CharacterController _controller;
@@ -111,6 +122,8 @@ namespace StarterAssets
 			// reset our timeouts on start
 			_jumpTimeoutDelta = JumpTimeout;
 			_fallTimeoutDelta = FallTimeout;
+
+			_aiming = false;
 		}
 
 		private void Update()
@@ -120,6 +133,8 @@ namespace StarterAssets
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
+			Spell();
+			Switch();
 		}
 
 		private void LateUpdate()
@@ -134,6 +149,7 @@ namespace StarterAssets
 			_animIDJump = Animator.StringToHash("Jump");
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+			_animIDCasting = Animator.StringToHash("Cast");
 		}
 
 		private void GroundedCheck()
@@ -169,7 +185,7 @@ namespace StarterAssets
 		private void Move()
 		{
 			// set target speed based on move speed, sprint speed and if sprint is pressed
-			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+			float targetSpeed = !_input.sprint ? SprintSpeed : MoveSpeed;
 
 			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -208,9 +224,6 @@ namespace StarterAssets
 			{
 				_targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
 				float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
-
-				// rotate to face input direction relative to camera position
-				transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
 			}
 
 
@@ -225,6 +238,12 @@ namespace StarterAssets
 				_animator.SetFloat(_animIDSpeed, _animationBlend);
 				_animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
 			}
+
+
+			Vector3 worldAimTarget = Camera.main.transform.position + Camera.main.transform.forward * 20;
+			worldAimTarget.y = transform.position.y;
+			Vector3 aimDirection = (worldAimTarget - transform.position).normalized;
+			transform.forward = Vector3.Lerp(transform.forward, aimDirection, Time.deltaTime * 20f);
 		}
 
 		private void JumpAndGravity()
@@ -293,6 +312,72 @@ namespace StarterAssets
 			if (_verticalVelocity < _terminalVelocity)
 			{
 				_verticalVelocity += Gravity * Time.deltaTime;
+			}
+		}
+
+		private void Switch() 
+		{
+
+		}
+
+		private void Special() 
+		{
+            if (_input.special && isShadow)
+            {
+				//ShadowMode
+            }
+            else if (_input.special)
+            {
+				//GrapplingHook
+            }
+		}
+
+
+		Interactable target;
+		private void Spell() 
+		{
+			float weight = _animator.GetLayerWeight(1);
+
+			if (_input.spell)
+            {
+				_aiming = true;
+				_animator.SetLayerWeight(1, Mathf.Lerp(weight, 1, Time.deltaTime));
+				aimParticles.SetActive(true);
+
+				Vector2 center = new Vector2(Screen.width / 2, Screen.height / 2);
+				Ray ray = Camera.main.ScreenPointToRay(center);
+
+                if (Physics.Raycast(ray, out RaycastHit raycastHit, raycastRange, aimLayerMask))
+                {
+					aimParticles.transform.position = raycastHit.point;
+                    if (raycastHit.transform.TryGetComponent<Interactable>(out target))
+                    {
+						aimParticles.transform.position = target.particleLocation.position;
+                    }
+
+					aimParticles.GetComponentInChildren<ParticleSystem>().startColor = isShadow? Color.white : Color.black;
+				}
+                else
+                {
+					aimParticles.transform.position = Camera.main.transform.position + Camera.main.transform.forward * raycastRange;
+					aimParticles.GetComponentInChildren<ParticleSystem>().startColor = isShadow ? Color.black : Color.white;
+				}
+
+                
+
+            }
+            else if (_aiming)
+            {
+                if (target != null)
+					target.Interact();
+				
+				_animator.SetTrigger(_animIDCasting);
+				aimParticles.SetActive(false);
+				_aiming = false;
+            }
+            else 
+			{
+				_animator.SetLayerWeight(1, Mathf.Lerp(weight, 0, Time.deltaTime));
 			}
 		}
 

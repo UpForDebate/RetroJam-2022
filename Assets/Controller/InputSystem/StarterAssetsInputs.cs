@@ -12,6 +12,9 @@ namespace StarterAssets
 		public Vector2 look;
 		public bool jump;
 		public bool sprint;
+		public bool spell;
+		public bool switched;
+		public bool special;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -45,6 +48,21 @@ namespace StarterAssets
 		{
 			SprintInput(value.isPressed);
 		}
+
+		public void OnSpell(InputValue value) 
+		{
+			SpellInput(value.isPressed);
+		}
+
+		public void OnSwitch(InputValue value) 
+		{
+			SwitchInput(value.isPressed);
+		}
+
+		public void OnSpecial(InputValue value) 
+		{
+			SpecialInput(value.isPressed);
+		}
 #else
 	// old input sys if we do decide to have it (most likely wont)...
 #endif
@@ -68,6 +86,21 @@ namespace StarterAssets
 		public void SprintInput(bool newSprintState)
 		{
 			sprint = newSprintState;
+		}
+
+		public void SpellInput(bool newSpellState) 
+		{
+			spell = newSpellState;
+		}
+
+		public void SwitchInput(bool newSwitchState) 
+		{
+			switched = newSwitchState;
+		}
+
+		public void SpecialInput(bool newSpecialState) 
+		{
+			special = newSpecialState;
 		}
 
 #if !UNITY_IOS || !UNITY_ANDROID
