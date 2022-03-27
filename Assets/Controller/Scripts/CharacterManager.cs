@@ -32,15 +32,26 @@ public class CharacterManager : MonoBehaviour
                 return LightCharacter;
             return ShadowCharacter;
         }}
-
-    public GameObject UnactiveCharacter { get
+    public bool ShadowActive
+    {
+        get
+        {
+            if (LightCharacter.activeSelf)
+                return false;
+            return true;
+        }
+    }
+    public GameObject UnactiveCharacter
+    {
+        get
         {
             if (LightCharacter.activeSelf)
                 return ShadowCharacter;
             return LightCharacter;
-        }}
+        }
+    }
 
- 
+
     public void OnDeath() 
     {
         if (LightCharacter.activeSelf)

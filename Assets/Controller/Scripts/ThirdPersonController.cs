@@ -240,12 +240,17 @@ namespace StarterAssets
 
 
 			Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-
-			// move the player
-			_controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			Vector3 targetHorizontal = targetDirection.normalized * (_speed * Time.deltaTime);
+			Vector3 targetMovement = new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime;
+			bool willMove = !CharacterManager.Instance.ShadowActive || LightTest.Instance.hasLight(targetHorizontal);
+			if (willMove)
+				// move the player
+				targetMovement += targetHorizontal;
+			_controller.Move(targetMovement);
 
 			// update animator if using character
-			if (_hasAnimator)
+			if (willMove)
+				if (_hasAnimator)
 			{
 				_animator.SetFloat(_animIDSpeed, _animationBlend);
 				_animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
