@@ -26,6 +26,8 @@ public class CharacterManager : MonoBehaviour
     private GameObject LightCharacter;
     [SerializeField]
     private GameObject ShadowCharacter;
+    [SerializeField]
+    private TextManaging textManaging;
 
     public int lightCount = 0;
     public int deathCount = 0;
@@ -84,7 +86,7 @@ public class CharacterManager : MonoBehaviour
 
         if (deathCount == 0)
         {
-            //deathCutScene
+            textManaging.TextAppear();
         }
 
         deathCount++;
