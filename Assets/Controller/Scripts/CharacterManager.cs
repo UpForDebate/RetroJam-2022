@@ -26,6 +26,12 @@ public class CharacterManager : MonoBehaviour
     private GameObject LightCharacter;
     [SerializeField]
     private GameObject ShadowCharacter;
+    public GameObject ActiveCharacter { get
+        {
+            if (LightCharacter.activeSelf)
+                return LightCharacter;
+            return ShadowCharacter;
+        }}
 
  
     public void OnDeath() 
