@@ -6,6 +6,6 @@ public class Breakable : Interactable
 {
     public override void Interact()
     {
-        Destroy(gameObject);
+        
     }
 }
