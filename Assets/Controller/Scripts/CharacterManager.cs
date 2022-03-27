@@ -7,9 +7,9 @@ public class CharacterManager : MonoBehaviour
 {
     #region Singleton
     private static CharacterManager _instance;
-    public static CharacterManager Instance 
+    public static CharacterManager Instance
     {
-        get 
+        get
         {
             if (_instance == null)
             {
@@ -26,12 +26,27 @@ public class CharacterManager : MonoBehaviour
     private GameObject LightCharacter;
     [SerializeField]
     private GameObject ShadowCharacter;
-    public GameObject ActiveCharacter { get
+
+    public int lightCount = 0;
+    public int deathCount = 0;
+
+    private void Update()
+    {
+        if (lightCount >= 4)
+        {
+            //YOU WIN!!!!
+        }
+    }
+
+    public GameObject ActiveCharacter
+    {
+        get
         {
             if (LightCharacter.activeSelf)
                 return LightCharacter;
             return ShadowCharacter;
-        }}
+        }
+    }
     public bool ShadowActive
     {
         get
@@ -52,7 +67,7 @@ public class CharacterManager : MonoBehaviour
     }
 
 
-    public void OnDeath() 
+    public void OnDeath()
     {
         if (LightCharacter.activeSelf)
         {
@@ -60,11 +75,18 @@ public class CharacterManager : MonoBehaviour
             ShadowCharacter.SetActive(true);
             vCam.Follow = ShadowCharacter.transform.Find("PlayerCameraRoot").transform;
         }
-        else 
+        else
         {
             ShadowCharacter.SetActive(false);
             LightCharacter.SetActive(true);
             vCam.Follow = LightCharacter.transform.Find("PlayerCameraRoot").transform;
         }
+
+        if (deathCount == 0)
+        {
+            //deathCutScene
+        }
+
+        deathCount++;
     }
 }

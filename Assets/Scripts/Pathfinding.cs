@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class Pathfinding : MonoBehaviour
 {
-    [SerializeField]
-    List<Transform> positions = new List<Transform>();
-    int currentTarget;
+    public List<Transform> positions = new List<Transform>();
+    public int currentTarget;
     [SerializeField]
     float speed = 20;
 
