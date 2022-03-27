@@ -19,7 +19,12 @@ public class GrapplingHook : MonoBehaviour
     void Update()
     {
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, 0.2f);
-        Vector3 direction = (_node.transform.position - _player.transform.position).normalized;
-        _player.GetComponent<CharacterController>().Move(direction * currentSpeed);
+        Vector3 direction = _node.transform.position - _player.transform.position;
+        
+        _player.GetComponent<CharacterController>().Move(direction.normalized * currentSpeed);
+        if (direction.magnitude < 0.2)
+        {
+            Destroy(this);
+        }
     }
 }
